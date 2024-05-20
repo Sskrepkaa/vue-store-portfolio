@@ -6,5 +6,5 @@ import HomePage from '@/pages/Home.vue';
 </script>
 
 <template>
-  <HomePage/>
+  <HomePage />
 </template>

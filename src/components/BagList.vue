@@ -1,11 +1,10 @@
 <template>
-    <div class="">
+    <div class="" v-auto-animate>
         <BagItem
             v-for="item in fetchBagItemsData"
             :key="item.id"
-            :title=item.title
-            :price=item.price
-            :img=item.img
+            :item="item"
+            @isDel="onClickDel"
         />
 
     </div>
@@ -21,6 +20,12 @@ export default {
             required: true
         }
     },
+  methods: {
+    onClickDel(i) {
+      console.log("key ",i);
+      this.$emit("isDel", i)
+    }
+  }
 }
 </script>
 

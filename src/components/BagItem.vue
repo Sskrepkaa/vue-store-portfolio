@@ -1,24 +1,30 @@
 <script>
 export default {
   props: {
-    img: String,
-    title: String,
-    price: Number,
+    item: Object
+  },
+  methods: {
+    onClickDel(i) {
+      console.log("key ",i);
+
+      this.$emit("isDel", i)
+    }
   }
 }
 </script>
 
 <template>
   <div class="relative flex w-full border border-slate-100 rounded-xl p-4 gap-4 my-4">
-    <img :src="img" class="w-16 h-16" alt="Sneaker" />
+    <img :src="item.img" class="w-16 h-16" alt="Sneaker" />
     <div class="flex flex-col w-full">
-      <p>{{ title }}</p>
+      <p>{{ item.title }}</p>
       <div class="flex justify-between mt-3">
-        <span class="font-bold">{{ price }} euro</span>
+        <span class="font-bold">{{ item.price }} euro</span>
         <img
           class="cursor-pointer opacity-30 hover:opacity-100 transition"
           src="/close.svg"
           alt="Close"
+          @click="onClickDel(item)"
         />
       </div>
     </div>

@@ -3,54 +3,31 @@
     v-if="flagBasket"
     :fetchBagItemsData="fetchBagItemsData"
     :totalPrice="endPriceFunc"
-    @backBag="backFromBasket">
+    @backBag="backFromBasket"
+    @isDel="isDelFromBag">
   </Bag>
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl shadow-grey-200 mt-20">
-    <MyHeader :totalPrice="endPriceFunc" @viewB="viewBasket()"/>
-    <div class="p-10">
-      <!-- sort -->
-      <div class="flex justify-between items-center mb-10">
-        <h1 class="text-3xl font-bold">All sneakers</h1>
-        <div class="flex items-center gap-4">
-          <select
-            class="py-2 px-3 border border-gray-200 focus:border-gray-400 rounded-md focus:outline-none"
-          >
-            <option value="name">Name</option>
-            <option value="price">Price up</option>
-            <option value="price">Price down</option>
-          </select>
-          <div class="relative">
-            <input
-              type="text"
-              class="border border-gray-200 rounded-md py-2 pl-10 pr-4 focus:outline-none focus:border-gray-400"
-              placeholder="Search..."
-            />
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <img src="/search.svg" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <CardList :fData="fetchData" @isLiked="isLiked" @isAdded="isAdded"/>
-    </div>
+    <MyHeader :totalPrice="endPriceFunc" :name="user.name" @viewBag="viewBasket()"/>
+    <RouterView :fData="fetchData" @isLiked="isLiked" @isAdded="isAdded"/>
   </div>
 </template>
 
 
 <script>
-import CardList from '@/components/CardList.vue';
 import MyHeader from '@/components/Header.vue';
 import Bag from '@/components/Bag.vue'
 //import bagItemsJson from '@/json/bag.json'
 //import sneakersJson from '@/json/sneakers.json'
 import * as api from '@/api/api.js';
+import { RouterView } from 'vue-router';
 
 export default {
-  components: {CardList, MyHeader, Bag},
+  components: { MyHeader, Bag},
   data() {
     return {
       fetchData: Array,
       flagBasket: false,
+      user: {name:"Max"},
       fetchBagItemsData: Array,
       fetchFavoriteData: Array,
     }
@@ -68,8 +45,8 @@ export default {
       try {
 
         const data = await api.fetchData("sneakers");
-        const {data: favorite} = await api.fetchData("favorite");
-        const {data: bagData} = await api.fetchData("bag");
+        const {data: favorite} = await api.fetchAuthData("favorite");
+        const {data: bagData} = await api.fetchAuthData("bag");
 
         if (data.status == 200) {
           this.fetchData = data.data.map((item) =>
@@ -107,7 +84,7 @@ export default {
     },
     async loadBagData() {
       try {
-        const {data: bagData} = await api.fetchData("bag");
+        const {data: bagData} = await api.fetchAuthData("bag");
 
         if (bagData.length>0) {
           this.fetchBagItemsData = bagData;
@@ -130,6 +107,7 @@ export default {
         this.loadBagData();}
       }
       else {
+        console.log("delete l 1 fd: ", this.fetchFavoriteData);
         const liked = this.fetchFavoriteData.find(favItem => favItem.parentId === item.id);
         const resp = await api.deleteItemById("favorite", liked.id);
         console.log("delete l: ", resp);
@@ -140,7 +118,7 @@ export default {
     async isAdded(item) {
       // post to server {parentId=item.id}, if 200 then:
       console.log("BBBAAAAANNNNG add: ", item)
-      //item.isAdded = !item.isAdded;
+      //item.isAdded != !item.isAdded;
       if (!item.isAdded) {
         const resp = await api.addItem("bag", {
           parentId: item.id,
@@ -158,6 +136,19 @@ export default {
         console.log("delete a: ", resp);
         if (resp) {item.isAdded = false;
         this.loadBagData();}
+      }
+    },
+    async isDelFromBag(item) {
+      try {
+        //const added = this.fetchBagItemsData.find(bagItem => bagItem.parentId === item.id);
+        const resp = await api.deleteItemById("bag", item.id);
+        console.log("delete a: ", resp);
+        if (resp) {
+          const mainItem = this.fetchData.find(mainItem => item.parentId === mainItem.id);
+          mainItem.isAdded = false;
+          this.loadBagData();}
+      } catch (e) {
+        alert("no del: ", e)
       }
     },
     backFromBasket() {
