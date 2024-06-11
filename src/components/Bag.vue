@@ -8,7 +8,7 @@
         <h2 class="text-2xl font-bold"><span @click="this.$emit('backBag')" aria-hidden="true">&larr;</span> Basket</h2>
 
         <div class="flex flex-col flex-1 justify-between">
-        <div v-if="isEmpty">
+        <div v-if="!isEmpty">
             <div class=" my-4">
                 <BagList :fetchBagItemsData="fetchBagItemsData" @isDel="onClickDel"/>
             </div>
@@ -66,10 +66,10 @@
         },
         computed: {
             isEmpty() {
-                if (this.fetchBagItemsData && this.fetchBagItemsData.values && this.fetchBagItemsData.values.length === 0) {
-                    return true;
+                if (this.fetchBagItemsData && this.fetchBagItemsData.length > 0) {
+                    return false;
                 }
-                return false // default
+                return true // default
             }
         },
     }

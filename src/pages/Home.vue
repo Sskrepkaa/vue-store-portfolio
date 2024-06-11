@@ -7,8 +7,8 @@
     @isDel="isDelFromBag">
   </Bag>
   <div class="bg-white w-4/5 m-auto rounded-xl shadow-xl shadow-grey-200 mt-20">
-    <MyHeader :totalPrice="endPriceFunc" :name="user.name" @viewBag="viewBasket()"/>
-    <RouterView :fData="fetchData" @isLiked="isLiked" @isAdded="isAdded"/>
+    <MyHeader :totalPrice="endPriceFunc" :name="user" @viewBag="viewBasket()"/>
+    <RouterView :fData="fetchData" @newQuery="newQueryF" @isLiked="isLiked" @isAdded="isAdded"/>
   </div>
 </template>
 
@@ -20,16 +20,17 @@ import Bag from '@/components/Bag.vue'
 //import sneakersJson from '@/json/sneakers.json'
 import * as api from '@/api/api.js';
 import { RouterView } from 'vue-router';
+import { useAuthStore } from '@/store/auth.js';
 
 export default {
   components: { MyHeader, Bag},
   data() {
     return {
-      fetchData: Array,
+      fetchData: [],
       flagBasket: false,
-      user: {name:"Max"},
-      fetchBagItemsData: Array,
-      fetchFavoriteData: Array,
+      user: this.userEmail,
+      fetchBagItemsData: [],
+      fetchFavoriteData: [],
     }
   },
   computed: {
@@ -38,16 +39,36 @@ export default {
             return 0; // default
         }
         return this.fetchBagItemsData.reduce((accu, item) => accu + item.price, 0)
+    },
+    userEmail() {
+      const authStore = useAuthStore();
+      return authStore.isLoggedIn ? authStore.user : null;
+    }
+  },
+  watch: {
+    // Note: only simple paths. Expressions are not supported.
+    'ifAuth'(newValue) {
+      // ...
     }
   },
   methods: {
-    async loadData() {
+
+    newQueryF(newQ) {
+      this.loadData(newQ);
+    },
+
+    async loadData(options) {
       try {
-
-        const data = await api.fetchData("sneakers");
-        const {data: favorite} = await api.fetchAuthData("favorite");
-        const {data: bagData} = await api.fetchAuthData("bag");
-
+        let data = [];
+        if (options) {
+          console.log("search", options);
+          data = await api.fetchData(`sneakers?${options}`);
+        }
+        else {
+          data = await api.fetchData("sneakers");
+        }
+        //const {data: favorite} = await api.fetchAuthData("favorite");
+        //const {data: bagData} = await api.fetchAuthData("bag");
         if (data.status == 200) {
           this.fetchData = data.data.map((item) =>
             ({
@@ -57,54 +78,75 @@ export default {
             })
           );
 
-          if (bagData.length>0) {
-            this.fetchBagItemsData = bagData;
-          }
-          else console.log("bag == 0: ", bagData);
+          // if (bagData.length>0) {
+          //   this.fetchBagItemsData = bagData;
+          // }
+          // else console.log("bag == 0: ", bagData);
 
-          if (favorite.length>0) {
-            this.fetchFavoriteData = favorite;
-          }
-          else console.log("favor == 0: ", bagData)
+          // if (favorite.length>0) {
+          //   this.fetchFavoriteData = favorite;
+          // }
+          // else console.log("favor == 0: ", bagData)
 
-          if (favorite.length>0 || bagData.length>0) {
-            this.fetchData.map((item) => {
-              const liked = favorite.find(favoriteItem => favoriteItem.parentId === item.id);
-                if (liked) item.isLiked = true;
-              const added = bagData.find(bagItem => bagItem.parentId === item.id);
-                if (added) item.isAdded = true;
-            })
-          }
+          // if (favorite.length>0 || bagData.length>0) {
+          //   this.fetchData.map((item) => {
+          //     const liked = favorite.find(favoriteItem => favoriteItem.parentId === item.id);
+          //       if (liked) item.isLiked = true;
+          //     const added = bagData.find(bagItem => bagItem.parentId === item.id);
+          //       if (added) item.isAdded = true;
+          //   })
+          // }
 
 
         }
         else console.log("no data: ", data)
       }
-      catch (e) {alert("no get data: ", e)}
+      catch (e) {console.log("no get data: ", e)}
+    },
+    async loadFavoriteData() {
+      try {
+        const {data: favorite} = await api.fetchAuthData("favorite");
+        if (favorite.length>0) {
+          this.fetchFavoriteData = favorite;
+          if (this.fetchData.length>0) {
+            this.fetchData.map((item) => {
+              const liked = favorite.find(favoriteItem => favoriteItem.parentId === item.id);
+                if (liked) item.isLiked = true;
+            })
+          }
+        }
+        else console.log("no favorite data: ", favorite)
+      } catch (error) {
+        alert("no favorite data catch: ", error)
+      }
     },
     async loadBagData() {
       try {
         const {data: bagData} = await api.fetchAuthData("bag");
-
+        this.fetchBagItemsData = bagData;
         if (bagData.length>0) {
-          this.fetchBagItemsData = bagData;
+          if (this.fetchData.length>0) {
+            this.fetchData.map((item) => {
+              const added = bagData.find(bagItem => bagItem.parentId === item.id);
+                if (added) item.isAdded = true;
+            })
+          }
         }
-        else console.log("no data: ", bagData)
+        else console.log("no bag data: ", bagData)
       } catch (error) {
-        alert("no get data2: ", error)
+        alert("no bag data catch: ", error)
       }
     },
     async isLiked(item) {
       // post to server {parentId=item.id}, if 200 then:
       console.log("BBBAAAAANNNNG: ", item)
-      //item.isLiked = !item.isLiked;
       if (!item.isLiked) {
         const resp = await api.addItem("favorite", {
           parentId: item.id
         });
         console.log("post l: ", resp);
         if (resp) {item.isLiked = true;
-        this.loadBagData();}
+        }
       }
       else {
         console.log("delete l 1 fd: ", this.fetchFavoriteData);
@@ -112,13 +154,12 @@ export default {
         const resp = await api.deleteItemById("favorite", liked.id);
         console.log("delete l: ", resp);
         if (resp) {item.isLiked = false;
-        this.loadBagData();}
+        }
       }
     },
     async isAdded(item) {
       // post to server {parentId=item.id}, if 200 then:
       console.log("BBBAAAAANNNNG add: ", item)
-      //item.isAdded != !item.isAdded;
       if (!item.isAdded) {
         const resp = await api.addItem("bag", {
           parentId: item.id,
@@ -128,7 +169,7 @@ export default {
         });
         console.log("post a: ", resp);
         if (resp) {item.isAdded = true;
-        this.loadBagData();}
+        await this.loadBagData();}
       }
       else {
         const added = this.fetchBagItemsData.find(bagItem => bagItem.parentId === item.id);
@@ -140,7 +181,6 @@ export default {
     },
     async isDelFromBag(item) {
       try {
-        //const added = this.fetchBagItemsData.find(bagItem => bagItem.parentId === item.id);
         const resp = await api.deleteItemById("bag", item.id);
         console.log("delete a: ", resp);
         if (resp) {
@@ -158,8 +198,32 @@ export default {
       this.flagBasket=true;
     }
   },
-  mounted() {
-    this.loadData();
+  async mounted() {
+    const authStore = useAuthStore();
+    await authStore.checkToken()
+    if (authStore.token && authStore.user) {
+      console.log("hallo dude", authStore.token)
+      await Promise.all([
+          this.loadData(),
+          this.loadBagData(),
+          this.loadFavoriteData()
+        ]);
+    }
+    else {
+        await this.loadData();
+      }
+    document.addEventListener('login', async () => {
+      console.log('LOGIN loaded');
+      await Promise.all([
+          this.loadBagData(),
+          this.loadFavoriteData()
+        ]);
+    });
+    document.addEventListener('logout', () => {
+      console.log('LOGOUT loaded');
+      this.fetchBagItemsData=[];
+      this.fetchFavoriteData=[];
+    });
   }
 }
 </script>

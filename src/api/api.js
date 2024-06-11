@@ -1,13 +1,15 @@
-// api.js
+// api.js - here there are all functions to API
 
 import axios from 'axios';
-import {useAuthStore} from "@/store/auth.js";
+import { useAuthStore } from "@/store/auth.js";
 
 const apiUrl = import.meta.env.VITE_APP_MYAPI_URL;
 
+const axiosInstance = axios.create({});
 
-const axiosInstance = axios.create({})
-axiosInstance.interceptors.request.use (config => {
+// Interceptors for axios
+axiosInstance.interceptors.request.use(
+  config => {
     const authStore = useAuthStore();
     const token = authStore.token;
 
@@ -19,11 +21,16 @@ axiosInstance.interceptors.request.use (config => {
   error => {
     return Promise.reject(error);
   }
-)
+);
 export default axiosInstance;
-export const login = async (optoins) => {
+
+/**
+ * Function to authorisation from API.
+ * @returns {Promise<Array>} - Array of data.
+ */
+export const login = async (options) => {
   try {
-    const response = await axios.post(`${apiUrl}/auth`, optoins);
+    const response = await axios.post(`${apiUrl}/auth`, options);
     const token = response.token;
     localStorage.setItem('token', token);
     return response;
@@ -31,65 +38,76 @@ export const login = async (optoins) => {
     console.error('Login failed:', error);
     throw error;
   }
-}
+};
 
 /**
- * Функция для non auth получения данных из API.
- * @returns {Promise<Array>} - Массив данных.
+ * Function to fetch user data from API.
+ * @returns {Promise<Array>} - Array of data.
+ */
+export const getUser = async () => {
+  try {
+    const { data: user } = await axiosInstance.get(`${apiUrl}/auth_me`);
+    return user;
+  } catch (error) {
+    console.error('Auth with token failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Function to fetch non-auth data from API.
+ * @returns {Promise<Array>} - Array of data.
  */
 export const fetchData = async (router) => {
   try {
     const response = await axios.get(`${apiUrl}/${router}`);
     return response;
   } catch (error) {
-    console.error('Ошибка при получении данных о сумке:', error);
+    console.error('Error fetching non-auth data:', error);
     throw error;
   }
 };
 
 /**
- * Функция для получения auth данных из API.
- * @returns {Promise<Array>} - Массив данных
+ * Function to fetch auth data from API.
+ * @returns {Promise<Array>} - Array of data.
  */
 export const fetchAuthData = async (router) => {
   try {
-    const authStore = useAuthStore();
-    const id = authStore.user.id;
-    console.log("id ", id);
-    const response = await axiosInstance.get(`${apiUrl}/${router}/?user_id=${id}`);
+    const response = await axiosInstance.get(`${apiUrl}/${router}/?_relations=users`);
     return response;
   } catch (error) {
-    console.error('Ошибка при получении данных о сумке:', error);
+    console.error('Error fetching auth data:', error);
     throw error;
   }
 };
 
 /**
- * Функция для добавления данных через API.
- * @param {Object} bagItem - Объект с данными для добавления.
- * @returns {Promise<Object>} - Объект с данными, добавленными в API.
+ * Function to add data via API.
+ * @param {Object} options - Object with data to add.
+ * @returns {Promise<Object>} - Object with data added to the API.
  */
 export const addItem = async (router, options) => {
   try {
-    const response = await axiosInstance.post(`https://801314a8e6fab379.mokky.dev/${router}`, options);
+    const response = await axiosInstance.post(`${apiUrl}/${router}`, options);
     return response.data;
   } catch (error) {
-    console.error('Ошибка при добавлении данных о сумке:', error);
+    console.error('Error adding bag data:', error);
     throw error;
   }
 };
 
 /**
- * Функция для удаления данных из API по идентификатору.
- * @param {number} id - Идентификатор для удаления.
- * @returns {Promise<void>} - Результат выполнения операции удаления.
+ * Function to delete data from API by ID.
+ * @param {number} id - ID for deletion.
+ * @returns {Promise<void>} - Result of the deletion operation.
  */
 export const deleteItemById = async (router, id) => {
   try {
-    const response = await axiosInstance.delete(`https://801314a8e6fab379.mokky.dev/${router}/${id}`);
-    return response; // В зависимости от вашего API, можете вернуть или не возвращать данные после успешного удаления
+    const response = await axiosInstance.delete(`${apiUrl}/${router}/${id}`);
+    return response;
   } catch (error) {
-    console.error(`Ошибка при удалении данных о сумке с ID ${id}:`, error);
+    console.error(`Error deleting bag data with ID ${id}:`, error);
     throw error;
   }
 };

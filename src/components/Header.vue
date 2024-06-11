@@ -5,25 +5,30 @@ import { useAuthStore } from '@/store/auth.js';
     data() {
       return {
         menuVisible: false,
-        //logout: useAuthStore.logout,
-        //isLoggedIn: false
+        user: this.userEmail
       }
     },
     props: {
       totalPrice: Number,
-      name: String,
-      //menuVisible: Boolean
     },
     computed: {
       isLoggedIn() {
         const authStore = useAuthStore();
         return authStore.isLoggedIn;
       },
+      userEmail() {
+        const authStore = useAuthStore();
+        return authStore.getUser ? authStore.getUser.email : null;
+      }
     },
     methods: {
-      logout() {
+      clkLogout() {
+        this.menuVisible = !this.menuVisible
+      },
+      async logout() {
         const authStore = useAuthStore();
-        authStore.logout();
+        this.menuVisible = false;
+        await authStore.logout();
       },
     },
   }
@@ -50,10 +55,10 @@ import { useAuthStore } from '@/store/auth.js';
         <img src="/heart.svg" alt="Favorite"/>
         <RouterLink to="/favorites"><span class="hidden md:block">Favorite</span></RouterLink>
       </li>
-      <li class="flex items-center gap-3 cursor-pointer min-w-fit">
+      <li @click="clkLogout" class="flex items-center gap-3 cursor-pointer min-w-fit">
         <img src="/profile.svg" alt="Profile"/>
-        <p>{{ name }}</p>
-        <span @click="logout">Logout</span>
+        <p>{{ userEmail }}</p>
+        
       </li>
     </ul>
     <ul v-else class="flex items-center gap-10">
@@ -66,11 +71,14 @@ import { useAuthStore } from '@/store/auth.js';
     </ul>
 
     <!-- TODO -->
-    <div v-show="menuVisible" class="absolute right-24 mt-14 w-32 bg-white rounded-md shadow-lg z-10">
-      <ul class="py-1">
-        <li class="cursor-pointer px-4 py-2 hover:bg-gray-100" @click="logout">Logout</li>
-      </ul>
+    <div v-show="menuVisible" @click="clkLogout" class="fixed top-0 left-0 h-full w-full">
+      <div class="absolute right-20 mt-44 w-32 bg-white rounded-md shadow-lg z-10">
+        <ul class="py-1">
+          <li class="cursor-pointer px-4 py-2 hover:bg-gray-100" @click="logout">Logout</li>
+        </ul>
+      </div>
     </div>
+    
     <!-- //TODO -->
   </header>
 </template>
