@@ -51,14 +51,15 @@
         }
     },
     watch: {
-        fetchItems(newQuery) {
-            this.$emit('search', newQuery);
-        },
+        // fetchItems(newQuery) {
+        //     this.$emit('search', newQuery);
+        // },
         searchItemWatch() {
             this.fetchItems();
         }
     },
     methods: {
+        //debounse use to set timeout for search&sort
         fetchItems: _.debounce(function() {
             let url = "";
             if (this.sortOption) {
@@ -68,7 +69,7 @@
                 url += `&title=*${encodeURIComponent(this.searchItem)}`;
             }
             this.$emit("newQuery", url);
-        }, 300),
+        }, 300), //timeout in ms
 
 
         onClickLike(i) {

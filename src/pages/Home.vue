@@ -16,10 +16,8 @@
 <script>
 import MyHeader from '@/components/Header.vue';
 import Bag from '@/components/Bag.vue'
-//import bagItemsJson from '@/json/bag.json'
-//import sneakersJson from '@/json/sneakers.json'
 import * as api from '@/api/api.js';
-import { RouterView } from 'vue-router';
+import { RouterView} from 'vue-router';
 import { useAuthStore } from '@/store/auth.js';
 
 export default {
@@ -45,14 +43,7 @@ export default {
       return authStore.isLoggedIn ? authStore.user : null;
     }
   },
-  watch: {
-    // Note: only simple paths. Expressions are not supported.
-    'ifAuth'(newValue) {
-      // ...
-    }
-  },
   methods: {
-
     newQueryF(newQ) {
       this.loadData(newQ);
     },
@@ -140,9 +131,11 @@ export default {
     async isLiked(item) {
       // post to server {parentId=item.id}, if 200 then:
       console.log("BBBAAAAANNNNG: ", item)
+      const authStore = useAuthStore();
       if (!item.isLiked) {
         const resp = await api.addItem("favorite", {
-          parentId: item.id
+          parentId: item.id,
+          user_id: authStore.user.id
         });
         console.log("post l: ", resp);
         if (resp) {item.isLiked = true;
@@ -160,9 +153,11 @@ export default {
     async isAdded(item) {
       // post to server {parentId=item.id}, if 200 then:
       console.log("BBBAAAAANNNNG add: ", item)
+      const authStore = useAuthStore();
       if (!item.isAdded) {
         const resp = await api.addItem("bag", {
           parentId: item.id,
+          user_id: authStore.user.id,
           title: item.title,
           price: item.price,
           img: item.img
@@ -223,6 +218,7 @@ export default {
       console.log('LOGOUT loaded');
       this.fetchBagItemsData=[];
       this.fetchFavoriteData=[];
+      window.location.reload();
     });
   }
 }

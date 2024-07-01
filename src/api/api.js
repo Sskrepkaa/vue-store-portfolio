@@ -1,4 +1,4 @@
-// api.js - here there are all functions to API
+// api.js - here there are all main functions to API
 
 import axios from 'axios';
 import { useAuthStore } from "@/store/auth.js";
@@ -74,7 +74,8 @@ export const fetchData = async (router) => {
  */
 export const fetchAuthData = async (router) => {
   try {
-    const response = await axiosInstance.get(`${apiUrl}/${router}/?_relations=users`);
+    const authStore = useAuthStore();
+    const response = await axiosInstance.get(`${apiUrl}/${router}/?user_id=${authStore.user.id}`);
     return response;
   } catch (error) {
     console.error('Error fetching auth data:', error);
