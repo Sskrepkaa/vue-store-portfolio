@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "title": "Nike Blazer Mid Suede",
+        "price": 100,
+        "img": "/sneakers/sneakers-1.jpg"
+    },
+    {
+        "id": 2,
+        "title": "Adidas Yellow",
+        "price": 130,
+        "img": "/sneakers/sneakers-5.jpg"
+    },
+    {
+        "id": 3,
+        "title": "Nike GreenZee West",
+        "price": 250,
+        "img": "/sneakers/sneakers-10.jpg"
+    },
+    {
+        "id": 4,
+        "title": "Reebok Original",
+        "price": 99,
+        "img": "/sneakers/sneakers-11.jpg"
+    }
+]
