@@ -14,7 +14,7 @@ Key features of the application:
 - **Global State Management:** Pinia is used for managing the global state.
 - **Styling:** The application is styled using Tailwind CSS.
 
-To ensure proper functionality, the application requires a `.env` file with the `API_URL` variable.
+To ensure proper functionality, the application requires a `.env` file with the `VITE_APP_MYAPI_URL` variable.
 
 This project showcases my skills in frontend development, working with REST APIs, and using modern web development technologies and tools.
 
@@ -38,24 +38,26 @@ This project showcases my skills in frontend development, working with REST APIs
    git clone https://github.com/yourusername/vue-store-portfolio.git
    
 2. Navigate to the project directory:
+   
    ```bash
    cd vue-store-portfolio
    
-3. Install dependencies:
-  ```bash
+4. Install dependencies:
+   
+   ```bash
    npm i
-
-4.Create a .env file in the root directory with the following content:
-  ```bash
+   
+4. Create a .env file in the root directory with the following content:
+   ```bash
    VITE_APP_MYAPI_URL=your_api_url
 
-5.Start the development server:
-  ```bash
+5. Start the development server:
+   ```bash
    npm run dev
 
 ## Usage
 
-To use the application, open your browser and navigate to http://localhost:3000. You can then explore the sneaker store and use all the features, including CRUD operations, user authentication, and more.
+To use the application, open your browser and navigate to http://localhost:5173. You can then explore the sneaker store and use all the features, including CRUD operations, user authentication, and more.
 
 ## Contributing
 
