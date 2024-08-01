@@ -1,5 +1,7 @@
 # vue-store-portfolio
 
+You can see it here: https://makukhin.dev
+
 ## Description
 
 This is a small sneaker store web application developed for my web developer portfolio. I fully developed the frontend using Vue.js 3 with the Options API, employing enterprise development patterns and effectively decomposing the main components.
